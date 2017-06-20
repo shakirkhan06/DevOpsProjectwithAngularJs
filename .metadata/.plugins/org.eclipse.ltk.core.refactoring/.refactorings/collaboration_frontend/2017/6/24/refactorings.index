@@ -1,0 +1,15 @@
+1497433298677	Rename resource 'c_Blog'
+1497433313382	Rename resource 'c_Chat'
+1497433325067	Rename resource 'c_Friend'
+1497433340929	Rename resource 'c_Home'
+1497433396415	Rename resource 'c_User'
+1497433477348	Move 6 resources to 's_Blog'
+1497433486149	Delete element
+1497433492786	Delete element
+1497433497917	Delete element
+1497433507291	Move 2 resources to 'WebContent'
+1497433514348	Delete element
+1497452875021	Move 'Home.html' to 's_Home'
+1497452884353	Move 'login.html' to 's_User'
+1497452888841	Move 'register.html' to 's_User'
+1497452921313	Delete elements

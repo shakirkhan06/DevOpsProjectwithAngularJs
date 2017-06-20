@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;DevopsBackEnd&apos; to &apos;collaboration_backend&apos;" description="Rename resource &apos;DevopsBackEnd&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="/DevopsBackEnd" name="collaboration_backend" stamp="1497453034626" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;DevopsFrontEnd&apos; to &apos;collaboration_frontend&apos;" description="Rename resource &apos;DevopsFrontEnd&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="/DevopsFrontEnd" name="collaboration_frontend" stamp="1497453082029" updateReferences="true"/>
+</session>

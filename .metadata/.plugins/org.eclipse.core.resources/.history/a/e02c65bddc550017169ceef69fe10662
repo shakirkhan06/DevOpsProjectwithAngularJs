@@ -1,0 +1,158 @@
+package com.niit.collabackEnd.RestController;
+
+import java.util.List;
+
+import javax.servlet.http.HttpSession;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.niit.collabackEnd.dao.FriendDao;
+import com.niit.collabackEnd.dao.UserDao;
+import com.niit.collabackEnd.model.User;
+
+	@RestController
+	public class UserController {
+		
+		private static final Logger log=LoggerFactory.getLogger(UserController.class);
+		
+		@Autowired(required=true)
+		private UserDao userDao;
+
+		@Autowired
+		private User userdetails;
+		
+		@Autowired
+		private FriendDao friendDao;
+		
+
+		// this method will return list of userdetails from the database
+		@RequestMapping(value = "/users", method = RequestMethod.GET)
+		public ResponseEntity<List<User>> list() {
+			List<User> userlist = userDao.list();
+			if (userlist.isEmpty()) {
+				log.debug("USERS NOT AVAILABLE");
+				userdetails.setErrorCode("404");
+				userdetails.setErrorMessage("users not available");
+				userlist.add(userdetails);
+			}
+			return new ResponseEntity<List<User>>(userlist, HttpStatus.OK);
+
+		}
+		
+		// this method will check whether the given userid exists or not
+			@RequestMapping(value = "/user/{userid}", method = RequestMethod.GET)
+			public ResponseEntity<User> get(@PathVariable(value = "userid") String userid) {
+				userdetails = userDao.getuser(userid);
+
+				if (userdetails == null) {
+					log.debug("USER IS NOT EXISTS WITH THIS ID"+userdetails.getUserid());
+					userdetails = new User();
+					userdetails.setErrorCode("404");
+					userdetails.setErrorMessage("user is not exists with this id"+userdetails.getUserid());
+				}
+				return new ResponseEntity<User>(userdetails, HttpStatus.OK);
+
+			}
+
+		
+		
+		//this method is used to update a user by user id
+		@RequestMapping(value="/user/{userid}",method=RequestMethod.PUT)
+		public ResponseEntity<User> updateuser(@PathVariable("userid")String userid)
+		{
+		log.debug("-->CALLING METHOD USER UPDATE");
+		if(userDao.getuser(userid)==null)
+		{
+			log.debug("-->USER DOES NOT EXISTS");
+			userdetails = new User();
+			userdetails.setErrorCode("404");
+			userdetails.setErrorMessage("User not found");
+			return new ResponseEntity<User>(userdetails,HttpStatus.NOT_FOUND);
+		}
+		userDao.update(userdetails);
+		log.debug("-->USER UPDATED SUCCESSFULLY");
+		return new ResponseEntity<User>(userdetails,HttpStatus.OK);
+		
+	}
+		//this method is used to delete a user from the database  
+		@RequestMapping(value="/user/{userid}",method=RequestMethod.DELETE)
+		public ResponseEntity<User> deleteuser(@PathVariable("userid")String userid)
+		{
+			log.debug("-->CALLING METHOD DELETE USER");
+			User userdetails=userDao.getuser(userid);
+			if(userdetails==null)
+			{
+				log.debug("-->User does not exist");
+				userdetails = new User();
+				userdetails.setErrorCode("404");
+				userdetails.setErrorMessage("user not found");
+				return new ResponseEntity<User>(userdetails,HttpStatus.NOT_FOUND);
+			}
+			userDao.delete(userid);
+			log.debug("-->USER DELETED SUCCESSFULLY");
+			return new ResponseEntity<User>(userdetails,HttpStatus.OK);
+		}
+		
+		//this method is used to create a user table in database when the user registers
+			@RequestMapping(value="/createusers/", method=RequestMethod.POST)
+			public ResponseEntity<User> createusers(@RequestBody User userdetails){
+				log.debug("-->CALLING METHOD CREATE USER");
+				if(userDao.getuser(userdetails.getUserid())==null){
+					userDao.save(userdetails);
+					return new ResponseEntity<User>(userdetails,HttpStatus.OK);
+				}
+				log.debug("-->USER ALREADY EXISTS"+userdetails.getUserid());
+				return new ResponseEntity<User>(userdetails,HttpStatus.OK);
+				}
+		//this method is used to validate the username and password
+			@RequestMapping(value="/user/authenticate",method=RequestMethod.POST)
+			public ResponseEntity<User> authenticateuser(@RequestBody User userdetails,HttpSession session)
+			{
+				log.debug("-->CALLING METHOD USER AUTHENTICATE");
+			
+				userdetails=userDao.authenticate(userdetails.getUsername(), userdetails.getPassword());
+				if(userdetails==null)
+				{
+					log.debug("-->USER DOES NOT EXISTS");
+					userdetails = new User();
+					userdetails.setErrorCode("404");
+					userdetails.setErrorMessage("Invalid Credentials, Please enter vaild credentials");
+			}
+				else
+				{
+					userdetails.setErrorCode("200");
+					log.debug("-->USER EXISTS WITH THE ABOVE CREDENTIALS");
+					session.setAttribute("loggedInUser",userdetails);
+					session.setAttribute("loggedInUserId", userdetails.getUsername());
+					friendDao.setOnLine(userdetails.getUsername());
+					userDao.setOnLine(userdetails.getUsername());
+				}
+				return new ResponseEntity<User>(userdetails,HttpStatus.OK);
+			}
+			//this method is used to logout a user from the application
+			@RequestMapping(value="/user/logout",method=RequestMethod.GET)
+			public ResponseEntity<User> logout(HttpSession session)
+			{
+				log.debug("CALLING METHOD USER LOGOUT");
+				User loggedInUser = (User) session.getAttribute("loggedInUser");
+				userdetails= userDao.authenticate(loggedInUser.getUsername(), loggedInUser.getPassword());
+				friendDao.setOffLine(userdetails.getUsername());
+				userDao.setOffLine(userdetails.getUsername());
+				session.invalidate();
+				return new ResponseEntity<User>(userdetails,HttpStatus.OK);
+			}
+		
+			
+			
+	}
+		
+}
